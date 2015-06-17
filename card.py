@@ -48,8 +48,8 @@ def getImageList(html):
         imgList3 = re.findall(imgRe3,html.decode(str(charsetStr[0]),'ignore'))
         titleList = re.findall(titleRe,html.decode(str(charsetStr[0]),'ignore'))
     else:
-        imgList1 = re.findall(imgRe1,html.decode('UTF-8','ignore'))
-        imgList2 = re.findall(imgRe2,html.decode('UTF-8','ignore'))
+        # imgList1 = re.findall(imgRe1,html.decode('UTF-8','ignore'))
+        # imgList2 = re.findall(imgRe2,html.decode('UTF-8','ignore'))
         imgList3 = re.findall(imgRe3,html.decode('UTF-8','ignore'))
         titleList = re.findall(titleRe,html.decode('UTF-8','ignore'))
 
@@ -99,13 +99,20 @@ class Spider(threading.Thread):
                 break
             try:
                 tmpurl = imgUrl[0].replace('src=','').replace('\\','').replace('\&quot;','').replace('"','').replace("'",'')
-                f = open(Dir+'%s%s.%s' %(self.name,i,imgUrl[1]),"wb")
+                tmpuri = Dir+'%s%s.%s' %(self.name,i,imgUrl[1])
+                f = open(tmpuri,"wb")
                 pic = opener.open(tmpurl)
                 f.write(pic.read())
                 pic.close()
                 f.close()
-                print(tmpurl+'\n完成'+str(i)+'张\n')
+
+                '''小于100kb删除'''
+                if os.path.getsize(tmpuri)<100000:
+                    os.remove(tmpuri)
+                else:
+                    print(tmpurl+'\n完成'+str(i)+'张\n')
             except Exception as e:
+                os.remove(tmpuri)
                 print("解析失败: "+self.name+'\n')
             finally :
                 i+=1
@@ -135,7 +142,7 @@ def forSector(url,D):
     global Dir
     Dir = D +title+'/'
     if not os.path.exists(Dir):
-        os.mkdir(Dir)
+        os.makedirs(Dir)
     global queue
     queue = Queue()
     for x in imgList:
